@@ -1,60 +1,55 @@
 <template>
-  <div class="premium-auth-page">
-    <div class="ambient-light light-1"></div>
-    <div class="ambient-light light-2"></div>
-
-    <div class="auth-glass-card">
-      <div class="back-nav">
-        <router-link to="/" class="ghost-btn">
-          <i class="fas fa-arrow-left"></i> 首页
-        </router-link>
-      </div>
-      
-      <div class="form-header">
-        <div class="brand-icon-box"><i class="fas fa-seedling"></i></div>
-        <h2>欢迎来到树洞</h2>
-        <p>稍作停顿，整理思绪后再出发</p>
-      </div>
-
-      <form class="auth-form" @submit.prevent="handleLogin">
-        <div class="form-item">
-          <label>账号 / 邮箱</label>
-          <div class="glass-input-wrapper">
-            <i class="fas fa-user input-icon"></i>
-            <input v-model="loginForm.username" type="text" required placeholder="请输入..." />
-          </div>
-        </div>
-
-        <div class="form-item">
-          <label>安全密码</label>
-          <div class="glass-input-wrapper">
-            <i class="fas fa-lock input-icon"></i>
-            <input v-model="loginForm.password" :type="showPassword ? 'text' : 'password'" required placeholder="请输入密码..." />
-            <button type="button" class="eye-btn" @click="showPassword = !showPassword">
-              <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-            </button>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <label class="custom-checkbox">
-            <input v-model="rememberMe" type="checkbox" />
-            <span class="checkmark"></span>
-            <span class="label-text">记住我的设备</span>
-          </label>
-          <a href="#" class="forgot-pwd">忘记密码?</a>
-        </div>
-
-        <button type="submit" :disabled="loading" class="primary-gradient-btn">
-          <i v-if="loading" class="fas fa-spinner fa-spin"></i>
-          {{ loading ? '正在验证...' : '进入空间' }}
-        </button>
-
-        <div class="switch-mode">
-          新面孔？<router-link to="/auth/register">开启心灵之旅</router-link>
-        </div>
-      </form>
+  <div class="auth-glass-card">
+    <div class="back-nav">
+      <router-link to="/" class="ghost-btn">
+        <i class="fas fa-arrow-left"></i> 首页
+      </router-link>
     </div>
+    
+    <div class="form-header">
+      <div class="brand-icon-box"><i class="fas fa-seedling"></i></div>
+      <h2>欢迎来到树洞</h2>
+      <p>稍作停顿，整理思绪后再出发</p>
+    </div>
+
+    <form class="auth-form" @submit.prevent="handleLogin">
+      <div class="form-item">
+        <label>账号 / 邮箱</label>
+        <div class="glass-input-wrapper">
+          <i class="fas fa-user input-icon"></i>
+          <input v-model="loginForm.username" type="text" required placeholder="请输入..." />
+        </div>
+      </div>
+
+      <div class="form-item">
+        <label>安全密码</label>
+        <div class="glass-input-wrapper">
+          <i class="fas fa-lock input-icon"></i>
+          <input v-model="loginForm.password" :type="showPassword ? 'text' : 'password'" required placeholder="请输入密码..." />
+          <button type="button" class="eye-btn" @click="showPassword = !showPassword">
+            <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <label class="custom-checkbox">
+          <input v-model="rememberMe" type="checkbox" />
+          <span class="checkmark"></span>
+          <span class="label-text">记住我的设备</span>
+        </label>
+        <a href="#" class="forgot-pwd">忘记密码?</a>
+      </div>
+
+      <button type="submit" :disabled="loading" class="primary-gradient-btn">
+        <i v-if="loading" class="fas fa-spinner fa-spin"></i>
+        {{ loading ? '正在验证...' : '进入空间' }}
+      </button>
+
+      <div class="switch-mode">
+        新面孔？<router-link to="/auth/register">开启心灵之旅</router-link>
+      </div>
+    </form>
   </div>
 </template>
 
@@ -65,16 +60,28 @@ import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import { login } from '@/api/user'
 
-const router = useRouter(); const route = useRoute(); const userStore = useUserStore()
-const loading = ref(false); const rememberMe = ref(false); const showPassword = ref(false)
+const router = useRouter()
+const route = useRoute()
+const userStore = useUserStore()
+
+const loading = ref(false)
+const rememberMe = ref(false)
+const showPassword = ref(false)
 const loginForm = reactive({ username: '', password: '' })
 
 onMounted(() => {
   if (localStorage.getItem('rememberMe') === 'true') {
-    rememberMe.value = true; loginForm.username = localStorage.getItem('rememberedUsername') || ''
+    rememberMe.value = true
+    loginForm.username = localStorage.getItem('rememberedUsername') || ''
   }
 })
-watch(rememberMe, (newVal) => { if (!newVal) { localStorage.removeItem('rememberMe'); localStorage.removeItem('rememberedUsername') } })
+
+watch(rememberMe, (newVal) => {
+  if (!newVal) {
+    localStorage.removeItem('rememberMe')
+    localStorage.removeItem('rememberedUsername')
+  }
+})
 
 const handleLogin = async () => {
   if (!loginForm.username || !loginForm.password) return ElMessage.error('请填写完整信息')
@@ -85,24 +92,35 @@ const handleLogin = async () => {
         successMsg: "欢迎回来", showDefaultMsg: true, onSuccess: resolve, onError: reject
       })
     })
-    if (rememberMe.value) { localStorage.setItem('rememberMe', 'true'); localStorage.setItem('rememberedUsername', loginForm.username.trim()) }
+    if (rememberMe.value) {
+      localStorage.setItem('rememberMe', 'true')
+      localStorage.setItem('rememberedUsername', loginForm.username.trim())
+    }
     userStore.setUserInfo(data)
     router.push(data.userInfo.userType === 2 ? (route.query.redirect || '/back/dashboard') : (route.query.redirect || '/'))
-  } catch (error) {} finally { loading.value = false }
+  } catch (error) {
+    // 错误由 axios 拦截器处理
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
 <style scoped>
-.premium-auth-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #F4F7F9; position: relative; overflow: hidden; font-family: -apple-system, sans-serif; }
-
-/* 氛围光效 */
-.ambient-light { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.6; z-index: 0; animation: float 15s infinite alternate; pointer-events: none;}
-.light-1 { width: 50vw; height: 50vw; background: #E0E7FF; top: -10%; left: -10%; }
-.light-2 { width: 40vw; height: 40vw; background: #FCE7F3; bottom: -5%; right: -5%; animation-delay: -5s; }
-@keyframes float { 0% { transform: translate(0, 0); } 100% { transform: translate(5%, 5%); } }
-
-/* 毛玻璃卡片 */
-.auth-glass-card { width: 100%; max-width: 420px; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 24px; padding: 40px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04); position: relative; z-index: 10; }
+/* 毛玻璃卡片：作为最外层容器，负责自身大小和居中限制 */
+.auth-glass-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+  margin: 0 auto; /* 保证在父容器中居中 */
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+}
 
 .back-nav { margin-bottom: 24px; }
 .ghost-btn { background: none; border: none; color: #64748B; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: 0.3s; }

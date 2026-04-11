@@ -332,7 +332,7 @@ const handleRegister = async () => {
 /* 按钮与链接 */
 .submit-btn {
   width: 100%; padding: 0.875rem; background: var(--primary);
-  color: white; border: none; border-radius: 10px; font-size: 1rem;
+  color: rgb(21, 20, 20); border: none; border-radius: 10px; font-size: 1rem;
   font-weight: 600; cursor: pointer; display: flex; justify-content: center;
   align-items: center; gap: 0.5rem; transition: all 0.2s; margin-top: 0.5rem;
 }

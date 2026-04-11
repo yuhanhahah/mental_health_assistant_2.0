@@ -4,7 +4,7 @@
       <h3 class="card-title">
         <i class="fas fa-capsules title-icon"></i> 电子布洛芬
       </h3>
-      <p class="section-desc">提取多维心理学理论，为你配制专属“心灵解药”。请放心倾诉，所有思绪将在这里被无条件接纳。处方生成后即刻焚毁，把重担留在这里，把轻盈带回生活。</p>
+<p class="section-desc">提取多维心理学理论，为您配制专属“心灵解药”。请放心倾诉，处方将自动同步至您的 <strong style="color: #3b82f6">[AI 咨询] - [记忆碎片]</strong> 档案库，方便随时翻阅回顾。</p>
     </div>
 
     <div class="sandplay-stage">
@@ -59,7 +59,7 @@
         </div>
         
         <div class="action-area">
-          <button class="flat-btn ghost-mode" @click="resetSandplay">呼出这口气，焚毁本次记录</button>
+              <button class="flat-btn ghost-mode" @click="resetSandplay">呼出这口气，完成本次疗愈</button>
         </div>
       </div>
     </div>
@@ -127,8 +127,8 @@ const triggerReframe = async () => {
     
     if (!token) throw new Error("未获取到认证Token");
 
-    const sessionRes = await request.post('/psychological-chat/session/start', {
-      sessionTitle: '电子布洛芬深度干预',
+ const sessionRes = await request.post('/psychological-chat/session/start', {
+      sessionTitle: `💊 电子布洛芬处方 | ${new Date().toLocaleDateString()}`,
       emotionState: '焦虑' 
     });
     
@@ -219,16 +219,9 @@ const triggerReframe = async () => {
     isTyping.value = false;
     reframedThought.value = "🫂 【情绪抱持】\n网络暂时走丢了，此刻的焦躁不安我感受到了。我在这里稳稳接住你。\n\n🪞 【叙事解构】\n系统暂时的断连只是一个技术插曲，并不代表你无法获得内心的平静。\n\n💊 【精神处方】\n你可以去听听窗外的声音，或者看看《当幸福来敲门》。\n\n🏃‍♂️ 【行动指南】\n去喝杯温水，伸个懒腰吧。";
     stage.value = 'orb';
-  } finally {
-    if (currentSessionId.value) {
-      try {
-        let rawId = currentSessionId.value;
-        if (typeof rawId === 'string' && rawId.startsWith('session_')) {
-          rawId = rawId.replace('session_', '');
-        }
-        await request.delete(`/psychological-chat/sessions/${rawId}`);
-      } catch (err) {}
-    }
+} finally {
+    // 存档版：不再发送 delete 请求，仅重置当前 ID
+    currentSessionId.value = null;
   }
 }
 
@@ -256,48 +249,60 @@ const resetSandplay = () => {
 .sandplay-header {
   margin-bottom: 16px;
 }
+.stage-input {
+  width: 100%;
+  max-width: 700px; /* 和输出卡片宽度完全一致 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 .cbt-textarea {
   width: 100%;
+  max-width: 700px; /* 统一宽度 */
   box-sizing: border-box;
-  font-size: 15px;
-  padding: 16px;
-  background: rgba(255,255,255,0.8);
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.02);
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  font-size: 16px;
+  padding: 24px;
+  /* 奶油毛玻璃质感 */
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(59, 130, 246, 0.15); 
+  border-radius: 24px;
   resize: none;
   outline: none;
-  transition: all 0.3s;
-  line-height: 1.6;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  line-height: 1.8;
+  color: #334155;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.02), 0 8px 32px rgba(31, 38, 135, 0.04);
 }
 .cbt-textarea:focus {
+  background: rgba(255, 255, 255, 0.8);
   border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 10px 40px rgba(59, 130, 246, 0.08);
 }
 .word-count {
+  width: 100%;
   text-align: right;
   font-size: 12px;
   color: #94a3b8;
-  margin-top: 4px;
+  margin-top: 8px;
+  padding-right: 10px;
 }
 .cbt-btn {
-  margin-top: 8px;
-  width: 100%;
-  justify-content: center;
-  padding: 14px;
-  border-radius: 12px;
-  background: #3b82f6; 
+  margin-top: 24px;
+  width: auto;      /* 宽度自适应内容 */
+  min-width: 220px; /* 给个最小宽度保持体面 */
+  padding: 14px 40px;
+  border-radius: 20px;
+  background: #783e84;
   color: white;
-  border: none;
-  cursor: pointer;
   font-weight: 600;
-  font-size: 15px;
+  box-shadow: 0 4px 15px rgba(188, 196, 210, 0.2);
   transition: all 0.3s;
 }
 .cbt-btn:hover:not(:disabled) {
-  background: #2563eb;
+  background: #4c2d7b;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(235, 236, 239, 0.3);
 }
 .cbt-btn:disabled {
   background: #cbd5e1;
@@ -390,27 +395,48 @@ const resetSandplay = () => {
 .prescription-nav {
   position: sticky;
   top: 0;
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
   z-index: 10;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 16px 30px 10px 30px;
-  border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+  flex-wrap: nowrap; /* 核心：严禁换行 */
+  justify-content: center; /* 核心：水平居中 */
+  align-items: center;
+  gap: 6px; /* 紧凑间距 */
+  padding: 16px 12px 14px 12px;
+  /* 核心修改：取消明显细线，换成极淡的阴影 */
+  border-bottom: 1px solid rgba(59, 130, 246, 0.05);
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.02);
   border-radius: 20px 20px 0 0;
   box-sizing: border-box;
   width: 100%;
+  overflow-x: auto; /* 屏幕极小时可滑动保底 */
 }
+/* 隐藏滚动条 */
+.prescription-nav::-webkit-scrollbar { display: none; }
 .nav-chip {
-  font-size: 13px;
+  flex-shrink: 0; /* 严禁挤压 */
+  font-size: 12px; /* 稍微缩小文字，给图标让位 */
   color: #3b82f6;
-  background: rgba(59, 130, 246, 0.1);
-  padding: 8px 15px;
-  border-radius: 16px;
+  background: rgba(59, 130, 246, 0.06); 
+  padding: 8px 10px; /* 压缩宽度 */
+  border-radius: 18px;
   cursor: pointer;
   font-weight: 600;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex; /* 新增 */
+  align-items: center; /* 新增 */
+  gap: 4px; /* 图标文字间距 */
+  white-space: nowrap;
+}
+/* 新增：专门针对胶囊内 Emoji/图标的大小设置 */
+.nav-chip i, .nav-chip span {
+  font-size: 16px; /* 放大图标，更有视觉重心 */
+}
+.nav-chip:hover {
+  background: #3b82f6;
+  color: white;
+  transform: translateY(-1px);
 }
 .nav-chip:hover {
   background: #3b82f6;
@@ -500,17 +526,26 @@ const resetSandplay = () => {
   box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
 }
 .ghost-mode {
-  background: transparent;
-  border: 1px solid #94a3b8;
-  color: #64748b;
-  padding: 12px 28px;
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.6); /* 半透明背景 */
+  border: 1px solid rgba(59, 130, 246, 0.2); /* 淡蓝色描边 */
+  color: #3b82f6; /* 品牌蓝文字 */
+  padding: 12px 32px;
+  border-radius: 24px; /* 圆润胶囊形 */
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.05); /* 极淡的蓝色投影 */
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+
 .ghost-mode:hover {
-  background: #f1f5f9;
-  color: #475569;
+  background: white; /* 悬浮时变白 */
+  border-color: #3b82f6;
+  color: #2563eb;
+  transform: translateY(-2px); /* 轻微上浮 */
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.15); /* 投影增强 */
 }
 .loading-text {
   margin-top: 24px;

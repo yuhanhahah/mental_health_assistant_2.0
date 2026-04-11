@@ -1,149 +1,142 @@
 <template>
   <div class="data-analytics-container">
+    <div class="ambient-light light-1"></div>
+    <div class="ambient-light light-2"></div>
+    <div class="ambient-light light-3"></div>
 
-    <!-- 系统概览卡片 -->
-    <div class="overview-cards" v-loading="loading">
-      <div class="overview-card">
-        <div class="card-icon users">
-          <i class="fas fa-users"></i>
+    <div class="content-wrapper">
+      <div class="overview-cards" v-loading="loading">
+        <div class="overview-card glass-card">
+          <div class="card-icon-wrapper soft-blue">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-title">总用户数</div>
+            <div class="card-value">{{ formatNumber(systemOverview.totalUsers) }}</div>
+            <div class="card-subtitle">活跃用户: {{ formatNumber(systemOverview.activeUsers) }}</div>
+          </div>
         </div>
-        <div class="card-content">
-          <div class="card-title">总用户数</div>
-          <div class="card-value">{{ formatNumber(systemOverview.totalUsers) }}</div>
-          <div class="card-subtitle">活跃用户: {{ formatNumber(systemOverview.activeUsers) }}</div>
+
+        <div class="overview-card glass-card">
+          <div class="card-icon-wrapper soft-pink">
+            <i class="fas fa-heart"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-title">情绪日记</div>
+            <div class="card-value">{{ formatNumber(systemOverview.totalDiaries) }}</div>
+            <div class="card-subtitle">今日新增: {{ formatNumber(systemOverview.todayNewDiaries) }}</div>
+          </div>
+        </div>
+
+        <div class="overview-card glass-card">
+          <div class="card-icon-wrapper soft-purple">
+            <i class="fas fa-comments"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-title">咨询会话</div>
+            <div class="card-value">{{ formatNumber(systemOverview.totalSessions) }}</div>
+            <div class="card-subtitle">今日新增: {{ formatNumber(systemOverview.todayNewSessions) }}</div>
+          </div>
+        </div>
+
+        <div class="overview-card glass-card">
+          <div class="card-icon-wrapper soft-orange">
+            <i class="fas fa-smile"></i>
+          </div>
+          <div class="card-content">
+            <div class="card-title">平均情绪</div>
+            <div class="card-value">{{ systemOverview.avgMoodScore || '0.0' }}<span class="unit">/10</span></div>
+            <div class="card-subtitle">情绪健康指数</div>
+          </div>
         </div>
       </div>
 
-      <div class="overview-card">
-        <div class="card-icon diaries">
-          <i class="fas fa-heart"></i>
-        </div>
-        <div class="card-content">
-          <div class="card-title">情绪日记</div>
-          <div class="card-value">{{ formatNumber(systemOverview.totalDiaries) }}</div>
-          <div class="card-subtitle">今日新增: {{ formatNumber(systemOverview.todayNewDiaries) }}</div>
-        </div>
-      </div>
-
-      <div class="overview-card">
-        <div class="card-icon sessions">
-          <i class="fas fa-comments"></i>
-        </div>
-        <div class="card-content">
-          <div class="card-title">咨询会话</div>
-          <div class="card-value">{{ formatNumber(systemOverview.totalSessions) }}</div>
-          <div class="card-subtitle">今日新增: {{ formatNumber(systemOverview.todayNewSessions) }}</div>
-        </div>
-      </div>
-
-      <div class="overview-card">
-        <div class="card-icon mood">
-          <i class="fas fa-smile"></i>
-        </div>
-        <div class="card-content">
-          <div class="card-title">平均情绪</div>
-          <div class="card-value">{{ systemOverview.avgMoodScore || '0.0' }}/10</div>
-          <div class="card-subtitle">情绪健康指数</div>
-        </div>
-      </div>
-    </div>
-
-     <!-- 情绪可视化中心 -->
-     <div class="chart-section">
-       <div class="visualization-toggle">
-         <el-button-group>
-           <el-button 
-             :type="visualizationMode === 'classic' ? 'primary' : 'default'"
-             @click="visualizationMode = 'classic'"
-           >
-             <i class="fas fa-cubes"></i>
-             经典热力图
-           </el-button>
-           <el-button 
-             :type="visualizationMode === 'hub' ? 'primary' : 'default'"
-             @click="visualizationMode = 'hub'"
-           >
-             <i class="fas fa-magic"></i>
-             多元可视化
-           </el-button>
-         </el-button-group>
-       </div>
-       
-       <EmotionHeatmap3D v-if="visualizationMode === 'classic'" :heatmapData="emotionHeatmap" />
-       <EmotionVisualizationHub v-if="visualizationMode === 'hub'" :heatmapData="{ ...emotionHeatmap, emotionTrend: emotionTrend }" />
-     </div>
-
-    <!-- 图表区域 -->
-    <div class="charts-grid">
-      <!-- 情绪趋势图 -->
-      <div class="chart-card">
-        <div class="chart-header">
-          <h3>
-            <i class="fas fa-line-chart"></i>
-            情绪趋势分析
-          </h3>
-        </div>
-        <div class="chart-content">
-          <div ref="emotionTrendChartRef" style="width: 100%; height: 300px;"></div>
-        </div>
-      </div>
-
-      <!-- 咨询统计图 -->
-      <div class="chart-card">
-        <div class="chart-header">
-          <h3>
-            <i class="fas fa-chart-pie"></i>
-            咨询会话统计
-          </h3>
-        </div>
-        <div class="chart-content">
-          <div class="consultation-stats">
-            <div class="stat-item">
-              <div class="stat-label">总会话数</div>
-              <div class="stat-value">{{ formatNumber(consultationStats.totalSessions) }}</div>
+      <div class="chart-section glass-card">
+        <div class="visualization-toggle">
+          <div class="pill-nav">
+            <div 
+              class="pill-btn" 
+              :class="{ 'active': visualizationMode === 'classic' }"
+              @click="visualizationMode = 'classic'"
+            >
+              <i class="fas fa-cubes"></i> 经典热力图
             </div>
-            <div class="stat-item">
-              <div class="stat-label">平均时长</div>
-              <div class="stat-value">{{ consultationStats.avgDurationMinutes || '0' }}分钟</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-label">活跃用户</div>
-              <div class="stat-value">{{ formatNumber(systemOverview.activeUsers) }}</div>
+            <div 
+              class="pill-btn" 
+              :class="{ 'active': visualizationMode === 'hub' }"
+              @click="visualizationMode = 'hub'"
+            >
+              <i class="fas fa-magic"></i> 多元可视化
             </div>
           </div>
-          <div ref="consultationChartRef" style="width: 100%; height: 300px;"></div>
+        </div>
+        
+        <EmotionHeatmap3D v-if="visualizationMode === 'classic'" :heatmapData="emotionHeatmap" />
+        <EmotionVisualizationHub v-if="visualizationMode === 'hub'" :heatmapData="{ ...emotionHeatmap, emotionTrend: emotionTrend }" />
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card glass-card">
+          <div class="chart-header">
+            <h3><i class="fas fa-wave-square"></i> 情绪趋势分析</h3>
+          </div>
+          <div class="chart-content">
+            <div ref="emotionTrendChartRef" style="width: 100%; height: 320px;"></div>
+          </div>
+        </div>
+
+        <div class="chart-card glass-card">
+          <div class="chart-header">
+            <h3><i class="fas fa-chart-pie"></i> 咨询会话统计</h3>
+          </div>
+          <div class="chart-content">
+            <div class="consultation-stats">
+              <div class="stat-item">
+                <div class="stat-label">总会话数</div>
+                <div class="stat-value">{{ formatNumber(consultationStats.totalSessions) }}</div>
+              </div>
+              <div class="divider"></div>
+              <div class="stat-item">
+                <div class="stat-label">平均时长</div>
+                <div class="stat-value">{{ consultationStats.avgDurationMinutes || '0' }}<span class="unit">m</span></div>
+              </div>
+              <div class="divider"></div>
+              <div class="stat-item">
+                <div class="stat-label">活跃用户</div>
+                <div class="stat-value">{{ formatNumber(systemOverview.activeUsers) }}</div>
+              </div>
+            </div>
+            <div ref="consultationChartRef" style="width: 100%; height: 260px;"></div>
+          </div>
+        </div>
+
+        <div class="chart-card glass-card full-width">
+          <div class="chart-header">
+            <h3><i class="fas fa-chart-line"></i> 用户活跃度趋势</h3>
+          </div>
+          <div class="chart-content">
+            <div ref="userActivityChartRef" style="width: 100%; height: 320px;"></div>
+          </div>
         </div>
       </div>
 
-      <!-- 用户活跃度图 -->
-      <div class="chart-card full-width">
-        <div class="chart-header">
-          <h3>
-            <i class="fas fa-user-friends"></i>
-            用户活跃度趋势
-          </h3>
+      <div class="emotion-tags-section glass-card" v-if="consultationStats.topEmotionTags">
+        <div class="chart-header" style="border: none; padding-bottom: 0;">
+          <h3><i class="fas fa-hashtag"></i> 高频情绪标签</h3>
         </div>
-        <div class="chart-content">
-          <div ref="userActivityChartRef" style="width: 100%; height: 300px;"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 情绪标签云 -->
-    <div class="emotion-tags-section" v-if="consultationStats.topEmotionTags">
-      <h3>
-        <i class="fas fa-tags"></i>
-        高频情绪标签
-      </h3>
-      <div class="emotion-tags-cloud">
-        <div 
-          v-for="(count, tag) in consultationStats.topEmotionTags" 
-          :key="tag"
-          class="emotion-tag"
-          :style="{ '--tag-size': Math.min(count / maxTagCount * 2 + 1, 3) }"
-        >
-          {{ tag }}
-          <span class="tag-count">({{ count }})</span>
+        <div class="emotion-tags-cloud">
+          <div 
+            v-for="(count, tag) in consultationStats.topEmotionTags" 
+            :key="tag"
+            class="emotion-tag glass-pill"
+            :style="{ 
+              '--tag-scale': Math.min(count / maxTagCount * 0.5 + 0.8, 1.3),
+              '--tag-opacity': Math.min(count / maxTagCount * 0.6 + 0.4, 1)
+            }"
+          >
+            <span class="tag-name">{{ tag }}</span>
+            <span class="tag-count">{{ count }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -158,39 +151,35 @@ import EmotionHeatmap3D from '@/components/common/EmotionHeatmap3D.vue'
 import EmotionVisualizationHub from '@/components/common/EmotionVisualizationHub.vue'
 import { getDataAnalytics } from '@/api/dataAnalytics'
 
-// ECharts温暖治愈主题配置
-const warmTheme = {
-  color: ['#ffeaa7', '#fab1a0', '#fd79a8', '#a29bfe', '#74b9ff', '#55a3ff', '#00b894', '#fdcb6e'],
-  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+// 重构 ECharts 奶油质感主题配置
+const creamTheme = {
+  backgroundColor: 'transparent',
   textStyle: {
-    color: '#2d3436',
-    fontFamily: 'system-ui, -apple-system, sans-serif'
+    fontFamily: '-apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif',
+    color: '#64748B'
   },
-  title: {
-    textStyle: {
-      color: '#2d3436',
-      fontWeight: 600
-    }
-  },
-  legend: {
-    textStyle: {
-      color: '#636e72'
-    }
+  tooltip: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderColor: 'rgba(59, 130, 246, 0.1)',
+    borderWidth: 1,
+    padding: [12, 16],
+    textStyle: { color: '#334155' },
+    extraCssText: 'box-shadow: 0 8px 32px rgba(31, 38, 135, 0.08); border-radius: 12px; backdrop-filter: blur(10px);'
   },
   grid: {
-    borderColor: 'rgba(244, 162, 97, 0.2)'
+    left: '2%', right: '2%', bottom: '2%', top: '15%', containLabel: true
   },
   categoryAxis: {
-    axisLine: { lineStyle: { color: 'rgba(244, 162, 97, 0.3)' } },
-    axisTick: { lineStyle: { color: 'rgba(244, 162, 97, 0.3)' } },
-    axisLabel: { color: '#636e72' },
-    splitLine: { lineStyle: { color: 'rgba(244, 162, 97, 0.1)' } }
+    axisLine: { lineStyle: { color: '#E2E8F0', width: 1 } },
+    axisTick: { show: false },
+    axisLabel: { color: '#94A3B8', margin: 12 },
+    splitLine: { show: false }
   },
   valueAxis: {
-    axisLine: { lineStyle: { color: 'rgba(244, 162, 97, 0.3)' } },
-    axisTick: { lineStyle: { color: 'rgba(244, 162, 97, 0.3)' } },
-    axisLabel: { color: '#636e72' },
-    splitLine: { lineStyle: { color: 'rgba(244, 162, 97, 0.1)' } }
+    axisLine: { show: false },
+    axisTick: { show: false },
+    axisLabel: { color: '#94A3B8' },
+    splitLine: { lineStyle: { color: '#F1F5F9', type: 'dashed' } }
   }
 }
 
@@ -200,28 +189,11 @@ const visualizationMode = ref('classic')
 
 const analyticsData = ref({
   systemOverview: {
-    totalUsers: 0,
-    activeUsers: 0,
-    totalDiaries: 0,
-    totalSessions: 0,
-    avgMoodScore: 0,
-    todayNewUsers: 0,
-    todayNewDiaries: 0,
-    todayNewSessions: 0
+    totalUsers: 0, activeUsers: 0, totalDiaries: 0, totalSessions: 0, avgMoodScore: 0, todayNewUsers: 0, todayNewDiaries: 0, todayNewSessions: 0
   },
-  emotionHeatmap: {
-    gridData: [],
-    emotionDistribution: {},
-    peakEmotionTime: '00:00',
-    dateRange: ''
-  },
+  emotionHeatmap: { gridData: [], emotionDistribution: {}, peakEmotionTime: '00:00', dateRange: '' },
   emotionTrend: [],
-  consultationStats: {
-    totalSessions: 0,
-    avgDurationMinutes: 0,
-    dailyTrend: [],
-    topEmotionTags: {}
-  },
+  consultationStats: { totalSessions: 0, avgDurationMinutes: 0, dailyTrend: [], topEmotionTags: {} },
   userActivity: []
 })
 
@@ -242,168 +214,81 @@ let emotionTrendChart = null
 let consultationChart = null
 let userActivityChart = null
 
-// 图表DOM引用
 const emotionTrendChartRef = ref(null)
 const consultationChartRef = ref(null)
 const userActivityChartRef = ref(null)
 
-// 格式化数字
 const formatNumber = (num) => {
   if (num === undefined || num === null) return '0'
   return num.toLocaleString()
 }
 
-// 获取数据
 const fetchData = async () => {
   loading.value = true
-  
   try {
-    await getDataAnalytics(
-      {},
-      {
-        onSuccess: (res) => {
-          analyticsData.value = res
-          nextTick(() => {
-            initCharts()
-          })
-        },
-        onError: (error) => {
-          console.error('获取数据分析失败:', error)
-          ElMessage.error('获取数据失败，请稍后重试')
-        }
+    await getDataAnalytics({}, {
+      onSuccess: (res) => {
+        analyticsData.value = res
+        nextTick(() => { initCharts() })
+      },
+      onError: (error) => {
+        console.error('获取数据分析失败:', error)
+        ElMessage.error('获取数据失败，请稍后重试')
       }
-    )
+    })
   } finally {
     loading.value = false
   }
 }
 
-// 初始化图表
 const initCharts = () => {
   initEmotionTrendChart()
   initConsultationChart()
   initUserActivityChart()
+  
+  // 监听窗口大小变化调整图表
+  window.addEventListener('resize', () => {
+    emotionTrendChart?.resize()
+    consultationChart?.resize()
+    userActivityChart?.resize()
+  })
 }
 
-// 初始化情绪趋势图
+// 初始化情绪趋势图 (柔和折线)
 const initEmotionTrendChart = () => {
   if (!emotionTrendChartRef.value) return
-  
-  // 销毁现有图表
-  if (emotionTrendChart) {
-    emotionTrendChart.dispose()
-  }
+  if (emotionTrendChart) emotionTrendChart.dispose()
 
-  emotionTrendChart = echarts.init(emotionTrendChartRef.value)
+  echarts.registerTheme('creamTheme', creamTheme)
+  emotionTrendChart = echarts.init(emotionTrendChartRef.value, 'creamTheme')
   const trendData = emotionTrend.value
 
   const option = {
-    title: {
-      text: '情绪趋势分析',
-      textStyle: {
-        fontSize: 16,
-        fontWeight: 600,
-        color: '#2d3436'
-      },
-      left: 'center',
-      top: 10
+    tooltip: { trigger: 'axis' },
+    legend: { 
+      data: ['平均情绪评分', '记录数量'], 
+      top: 0, right: 0,
+      icon: 'circle', itemWidth: 8, itemHeight: 8,
+      textStyle: { color: '#64748B' }
     },
-    tooltip: {
-      trigger: 'axis',
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      borderColor: '#fab1a0',
-      borderWidth: 1,
-      textStyle: {
-        color: '#2d3436'
-      }
-    },
-    legend: {
-      data: ['平均情绪评分', '记录数量'],
-      top: 40,
-      textStyle: {
-        color: '#636e72'
-      }
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '3%',
-      top: 80,
-      containLabel: true
-    },
-    xAxis: {
-      type: 'category',
-      data: trendData.map(item => item.date),
-      axisLine: {
-        lineStyle: {
-          color: 'rgba(244, 162, 97, 0.3)'
-        }
-      },
-      axisLabel: {
-        color: '#636e72'
-      }
-    },
+    xAxis: { type: 'category', data: trendData.map(item => item.date), boundaryGap: false },
     yAxis: [
-      {
-        type: 'value',
-        name: '情绪评分',
-        position: 'left',
-        axisLabel: {
-          color: '#636e72'
-        },
-        axisLine: {
-          lineStyle: {
-            color: 'rgba(244, 162, 97, 0.3)'
-          }
-        },
-        splitLine: {
-          lineStyle: {
-            color: 'rgba(244, 162, 97, 0.1)'
-          }
-        }
-      },
-      {
-        type: 'value',
-        name: '记录数量',
-        position: 'right',
-        axisLabel: {
-          color: '#636e72'
-        },
-        axisLine: {
-          lineStyle: {
-            color: 'rgba(244, 162, 97, 0.3)'
-          }
-        },
-        splitLine: {
-          show: false
-        }
-      }
+      { type: 'value', name: '评分', min: 0, max: 10 },
+      { type: 'value', name: '数量', splitLine: { show: false } }
     ],
     series: [
       {
         name: '平均情绪评分',
         type: 'line',
         data: trendData.map(item => item.avgMoodScore),
-        smooth: true,
-        lineStyle: {
-          width: 3,
-          color: '#ffeaa7'
-        },
-        itemStyle: {
-          color: '#ffeaa7'
-        },
+        smooth: 0.4,
+        symbol: 'none',
+        lineStyle: { width: 4, color: '#A78BFA' },
         areaStyle: {
-          color: {
-            type: 'linear',
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              { offset: 0, color: 'rgba(255, 234, 167, 0.8)' },
-              { offset: 1, color: 'rgba(255, 234, 167, 0.1)' }
-            ]
-          }
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(167, 139, 250, 0.4)' },
+            { offset: 1, color: 'rgba(167, 139, 250, 0.05)' }
+          ])
         }
       },
       {
@@ -411,288 +296,107 @@ const initEmotionTrendChart = () => {
         type: 'line',
         yAxisIndex: 1,
         data: trendData.map(item => item.recordCount),
-        smooth: true,
-        lineStyle: {
-          width: 3,
-          color: '#fab1a0'
-        },
-        itemStyle: {
-          color: '#fab1a0'
-        }
+        smooth: 0.4,
+        symbol: 'none',
+        lineStyle: { width: 3, color: '#F472B6', type: 'dashed' }
       }
     ]
   }
-
   emotionTrendChart.setOption(option)
 }
 
-// 初始化咨询统计图
+// 初始化咨询统计图 (圆角柱状图)
 const initConsultationChart = () => {
   if (!consultationChartRef.value) return
-  
-  // 销毁现有图表
-  if (consultationChart) {
-    consultationChart.dispose()
-  }
+  if (consultationChart) consultationChart.dispose()
 
-  consultationChart = echarts.init(consultationChartRef.value)
+  consultationChart = echarts.init(consultationChartRef.value, 'creamTheme')
   const dailyTrend = consultationStats.value.dailyTrend || []
 
   const option = {
-    title: {
-      text: '咨询活动统计',
-      textStyle: {
-        fontSize: 16,
-        fontWeight: 600,
-        color: '#2d3436'
-      },
-      left: 'center',
-      top: 10
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    legend: { 
+      data: ['会话数量', '参与用户'], 
+      top: 0, right: 0,
+      icon: 'roundRect', itemWidth: 12, itemHeight: 4,
     },
-    tooltip: {
-      trigger: 'axis',
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      borderColor: '#fab1a0',
-      borderWidth: 1,
-      textStyle: {
-        color: '#2d3436'
-      }
-    },
-    legend: {
-      data: ['会话数量', '参与用户数'],
-      top: 40,
-      textStyle: {
-        color: '#636e72'
-      }
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '3%',
-      top: 80,
-      containLabel: true
-    },
-    xAxis: {
-      type: 'category',
-      data: dailyTrend.map(item => item.date),
-      axisLine: {
-        lineStyle: {
-          color: 'rgba(244, 162, 97, 0.3)'
-        }
-      },
-      axisLabel: {
-        color: '#636e72'
-      }
-    },
-    yAxis: {
-      type: 'value',
-      axisLabel: {
-        color: '#636e72'
-      },
-      axisLine: {
-        lineStyle: {
-          color: 'rgba(244, 162, 97, 0.3)'
-        }
-      },
-      splitLine: {
-        lineStyle: {
-          color: 'rgba(244, 162, 97, 0.1)'
-        }
-      }
-    },
+    xAxis: { type: 'category', data: dailyTrend.map(item => item.date) },
+    yAxis: { type: 'value' },
     series: [
       {
         name: '会话数量',
         type: 'bar',
+        barWidth: '25%',
         data: dailyTrend.map(item => item.sessionCount),
         itemStyle: {
-          color: {
-            type: 'linear',
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              { offset: 0, color: '#74b9ff' },
-              { offset: 1, color: '#0984e3' }
-            ]
-          }
-        },
-        barWidth: '40%'
+          borderRadius: [6, 6, 0, 0],
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: '#60A5FA' },
+            { offset: 1, color: '#3B82F6' }
+          ])
+        }
       },
       {
-        name: '参与用户数',
+        name: '参与用户',
         type: 'bar',
+        barWidth: '25%',
         data: dailyTrend.map(item => item.userCount),
         itemStyle: {
-          color: {
-            type: 'linear',
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              { offset: 0, color: '#fdcb6e' },
-              { offset: 1, color: '#f39c12' }
-            ]
-          }
-        },
-        barWidth: '40%'
+          borderRadius: [6, 6, 0, 0],
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: '#FBBF24' },
+            { offset: 1, color: '#F59E0B' }
+          ])
+        }
       }
     ]
   }
-
   consultationChart.setOption(option)
 }
 
-// 初始化用户活跃度图
+// 初始化用户活跃度图 (堆叠面积图)
 const initUserActivityChart = () => {
   if (!userActivityChartRef.value) return
-  
-  // 销毁现有图表
-  if (userActivityChart) {
-    userActivityChart.dispose()
-  }
+  if (userActivityChart) userActivityChart.dispose()
 
-  userActivityChart = echarts.init(userActivityChartRef.value)
+  userActivityChart = echarts.init(userActivityChartRef.value, 'creamTheme')
   const activityData = userActivity.value
 
   const option = {
-    title: {
-      text: '用户活跃度趋势',
-      textStyle: {
-        fontSize: 16,
-        fontWeight: 600,
-        color: '#2d3436'
-      },
-      left: 'center',
-      top: 10
+    tooltip: { trigger: 'axis' },
+    legend: { 
+      data: ['活跃用户', '新增用户', '日记记录', '发起咨询'], 
+      top: 0, right: 0,
+      icon: 'circle'
     },
-    tooltip: {
-      trigger: 'axis',
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      borderColor: '#fab1a0',
-      borderWidth: 1,
-      textStyle: {
-        color: '#2d3436'
-      }
-    },
-    legend: {
-      data: ['活跃用户', '新增用户', '日记用户', '咨询用户'],
-      top: 40,
-      textStyle: {
-        color: '#636e72'
-      }
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '3%',
-      top: 80,
-      containLabel: true
-    },
-    xAxis: {
-      type: 'category',
-      data: activityData.map(item => item.date),
-      axisLine: {
-        lineStyle: {
-          color: 'rgba(244, 162, 97, 0.3)'
-        }
-      },
-      axisLabel: {
-        color: '#636e72'
-      }
-    },
-    yAxis: {
-      type: 'value',
-      axisLabel: {
-        color: '#636e72'
-      },
-      axisLine: {
-        lineStyle: {
-          color: 'rgba(244, 162, 97, 0.3)'
-        }
-      },
-      splitLine: {
-        lineStyle: {
-          color: 'rgba(244, 162, 97, 0.1)'
-        }
-      }
-    },
+    xAxis: { type: 'category', boundaryGap: false, data: activityData.map(item => item.date) },
+    yAxis: { type: 'value' },
     series: [
       {
-        name: '活跃用户',
-        type: 'line',
-        data: activityData.map(item => item.activeUsers),
-        smooth: true,
-        lineStyle: {
-          width: 3,
-          color: '#a29bfe'
-        },
-        itemStyle: {
-          color: '#a29bfe'
-        },
-        areaStyle: {
-          color: {
-            type: 'linear',
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              { offset: 0, color: 'rgba(162, 155, 254, 0.4)' },
-              { offset: 1, color: 'rgba(162, 155, 254, 0.1)' }
-            ]
-          }
-        }
+        name: '活跃用户', type: 'line', smooth: true, symbol: 'none',
+        lineStyle: { width: 3, color: '#818CF8' },
+        data: activityData.map(item => item.activeUsers)
       },
       {
-        name: '新增用户',
-        type: 'line',
-        data: activityData.map(item => item.newUsers),
-        smooth: true,
-        lineStyle: {
-          width: 3,
-          color: '#fdcb6e'
-        },
-        itemStyle: {
-          color: '#fdcb6e'
-        }
+        name: '新增用户', type: 'line', smooth: true, symbol: 'none',
+        lineStyle: { width: 3, color: '#34D399' },
+        data: activityData.map(item => item.newUsers)
       },
       {
-        name: '日记用户',
-        type: 'line',
-        data: activityData.map(item => item.diaryUsers),
-        smooth: true,
-        lineStyle: {
-          width: 3,
-          color: '#00b894'
-        },
-        itemStyle: {
-          color: '#00b894'
-        }
+        name: '日记记录', type: 'line', smooth: true, symbol: 'none',
+        lineStyle: { width: 2, color: '#F472B6' },
+        data: activityData.map(item => item.diaryUsers)
       },
       {
-        name: '咨询用户',
-        type: 'line',
-        data: activityData.map(item => item.consultationUsers),
-        smooth: true,
-        lineStyle: {
-          width: 3,
-          color: '#fab1a0'
-        },
-        itemStyle: {
-          color: '#fab1a0'
-        }
+        name: '发起咨询', type: 'line', smooth: true, symbol: 'none',
+        lineStyle: { width: 2, color: '#FCD34D' },
+        data: activityData.map(item => item.consultationUsers)
       }
     ]
   }
-
   userActivityChart.setOption(option)
 }
 
-
-// 生命周期
 onMounted(() => {
   fetchData()
 })
@@ -700,76 +404,83 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .data-analytics-container {
-  padding: 24px;
-  background: linear-gradient(135deg, #fdf7f0 0%, #fef9f3 50%, #fff5ee 100%);
   min-height: 100vh;
+  background-color: #F4F7F9; /* 统一的灰蓝色底层 */
   position: relative;
-  
-  &::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="warm-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1.5" fill="%23ffeaa7" opacity="0.1"/><circle cx="5" cy="5" r="1" fill="%23fab1a0" opacity="0.08"/><circle cx="15" cy="15" r="0.8" fill="%23fd79a8" opacity="0.06"/></pattern></defs><rect width="100" height="100" fill="url(%23warm-dots)"/></svg>');
-    pointer-events: none;
-    z-index: 0;
-  }
-  
-  > * {
-    position: relative;
-    z-index: 1;
-  }
+  overflow: hidden;
+  padding: 32px 24px;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
 }
 
+/* 全局梦幻氛围灯 */
+.ambient-light {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.5;
+  z-index: 0;
+  animation: float 20s infinite alternate;
+  pointer-events: none;
+}
+.light-1 { width: 60vw; height: 60vw; background: #E0E7FF; top: -20%; left: -10%; }
+.light-2 { width: 50vw; height: 50vw; background: #FCE7F3; bottom: -10%; right: -10%; animation-delay: -5s; }
+.light-3 { width: 40vw; height: 40vw; background: #FEF3C7; top: 40%; left: 30%; animation-delay: -10s; opacity: 0.3; }
 
+@keyframes float {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(3%, 5%); }
+}
+
+.content-wrapper {
+  position: relative;
+  z-index: 10;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* 通用毛玻璃卡片 */
+.glass-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 24px;
+  box-shadow: 0 10px 40px rgba(31, 38, 135, 0.03);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* --- 概览卡片区域 --- */
 .overview-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
 
   .overview-card {
-    background: white;
     padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
-    gap: 16px;
-    transition: all 0.3s ease;
+    gap: 20px;
 
     &:hover {
       transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 16px 40px rgba(31, 38, 135, 0.06);
     }
 
-    .card-icon {
-      width: 60px;
-      height: 60px;
-      border-radius: 12px;
+    .card-icon-wrapper {
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 24px;
-      color: white;
-
-      &.users {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      }
-
-      &.diaries {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      }
-
-      &.sessions {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-      }
-
-      &.mood {
-        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-      }
+      
+      /* 冰淇淋配色 */
+      &.soft-blue { background: #EEF2FF; color: #6366F1; }
+      &.soft-pink { background: #FCE7F3; color: #EC4899; }
+      &.soft-purple { background: #F3E8FF; color: #8B5CF6; }
+      &.soft-orange { background: #FEF3C7; color: #F59E0B; }
     }
 
     .card-content {
@@ -777,60 +488,66 @@ onMounted(() => {
 
       .card-title {
         font-size: 14px;
-        color: #7f8c8d;
-        margin-bottom: 4px;
+        font-weight: 600;
+        color: #64748B;
+        margin-bottom: 6px;
       }
 
       .card-value {
-        font-size: 24px;
-        font-weight: 700;
-        color: #2c3e50;
+        font-size: 28px;
+        font-weight: 800;
+        color: #1E293B;
         margin-bottom: 4px;
+        font-family: 'DIN Alternate', -apple-system, sans-serif;
+        
+        .unit { font-size: 16px; color: #94A3B8; font-weight: 500; margin-left: 2px;}
       }
 
       .card-subtitle {
         font-size: 12px;
-        color: #95a5a6;
+        color: #94A3B8;
+        font-weight: 500;
       }
     }
   }
 }
 
+/* --- 图表与内容区域 --- */
 .chart-section {
-  margin-bottom: 30px;
+  padding: 24px;
+  margin-bottom: 32px;
   
   .visualization-toggle {
     display: flex;
     justify-content: center;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     
-    .el-button-group {
-      box-shadow: 0 4px 12px rgba(244, 162, 97, 0.3);
-      border-radius: 25px;
-      overflow: hidden;
+    .pill-nav {
+      display: inline-flex;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 30px;
+      padding: 6px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
       
-      .el-button {
-        border: none;
-        background: rgba(255, 255, 255, 0.9);
-        color: #2d3436;
-        font-weight: 500;
-        padding: 12px 24px;
-        transition: all 0.3s ease;
+      .pill-btn {
+        padding: 10px 24px;
+        border-radius: 24px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #64748B;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
         
-        &:hover {
-          background: rgba(255, 234, 167, 0.8);
-          transform: translateY(-1px);
-        }
+        &:hover { color: #3B82F6; }
         
-        &.el-button--primary {
-          background: linear-gradient(135deg, #ffeaa7, #fab1a0);
-          color: #2d3436;
-          box-shadow: 0 2px 8px rgba(244, 162, 97, 0.4);
-        }
-        
-        i {
-          margin-right: 8px;
-          font-size: 16px;
+        &.active {
+          background: white;
+          color: #3B82F6;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
         }
       }
     }
@@ -839,66 +556,57 @@ onMounted(() => {
 
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
   gap: 24px;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 
   .chart-card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    padding: 24px;
 
-    &.full-width {
-      grid-column: 1 / -1;
-    }
+    &.full-width { grid-column: 1 / -1; }
 
     .chart-header {
-      padding: 20px;
-      border-bottom: 1px solid #eee;
-
+      margin-bottom: 20px;
       h3 {
         margin: 0;
         font-size: 16px;
-        color: #2c3e50;
+        font-weight: 700;
+        color: #334155;
         display: flex;
         align-items: center;
-        gap: 8px;
-
+        gap: 10px;
+        
         i {
-          color: #3498db;
+          color: #8B5CF6;
+          background: #EEF2FF;
+          padding: 8px;
+          border-radius: 10px;
+          font-size: 14px;
         }
       }
     }
 
     .chart-content {
-      padding: 20px;
-      height: 300px;
       position: relative;
-
-      canvas {
-        width: 100% !important;
-        height: 100% !important;
-      }
-
+      
       .consultation-stats {
         display: flex;
-        justify-content: space-around;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(248, 250, 252, 0.5);
+        border: 1px solid rgba(255,255,255,0.8);
+        border-radius: 16px;
+        padding: 16px 24px;
         margin-bottom: 20px;
+
+        .divider { width: 1px; height: 30px; background: #E2E8F0; }
 
         .stat-item {
           text-align: center;
-
-          .stat-label {
-            font-size: 12px;
-            color: #7f8c8d;
-            margin-bottom: 4px;
-          }
-
-          .stat-value {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2c3e50;
+          .stat-label { font-size: 12px; color: #64748B; margin-bottom: 4px; font-weight: 500; }
+          .stat-value { 
+            font-size: 20px; font-weight: 700; color: #1E293B; 
+            .unit { font-size: 14px; color: #94A3B8; margin-left: 2px;}
           }
         }
       }
@@ -906,65 +614,62 @@ onMounted(() => {
   }
 }
 
+/* --- 情绪标签云 --- */
 .emotion-tags-section {
-  background: white;
   padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-
-  h3 {
-    margin: 0 0 20px 0;
-    font-size: 18px;
-    color: #2c3e50;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    i {
-      color: #3498db;
-    }
-  }
-
+  
   .emotion-tags-cloud {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 16px;
+    padding-top: 16px;
 
-    .emotion-tag {
-      padding: 8px 16px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border-radius: 20px;
-      font-size: calc(12px * var(--tag-size));
-      font-weight: 500;
-      transition: all 0.3s ease;
-      cursor: pointer;
+    .glass-pill {
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      padding: 10px 20px;
+      border-radius: 30px;
+      box-shadow: 0 4px 15px rgba(31, 38, 135, 0.03);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transform: scale(var(--tag-scale));
+      transform-origin: left center;
+      opacity: var(--tag-opacity);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: default;
 
       &:hover {
-        transform: scale(1.1);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        background: white;
+        transform: scale(calc(var(--tag-scale) * 1.05));
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.1);
+        z-index: 10;
+        opacity: 1;
       }
 
+      .tag-name {
+        font-weight: 600;
+        color: #3B82F6;
+        font-size: 14px;
+      }
       .tag-count {
-        opacity: 0.8;
-        font-size: 0.9em;
+        background: #EEF2FF;
+        color: #6366F1;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 700;
       }
     }
   }
 }
 
-// 响应式设计
+// 响应式
+@media (max-width: 1024px) {
+  .charts-grid { grid-template-columns: 1fr; }
+}
 @media (max-width: 768px) {
-  .overview-cards {
-    grid-template-columns: 1fr;
-  }
-
-  .charts-grid {
-    grid-template-columns: 1fr;
-
-    .chart-card .chart-content {
-      height: 250px;
-    }
-  }
+  .data-analytics-container { padding: 16px; }
+  .overview-cards { grid-template-columns: 1fr; }
 }
 </style>
