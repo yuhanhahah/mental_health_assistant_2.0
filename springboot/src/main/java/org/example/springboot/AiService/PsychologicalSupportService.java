@@ -67,9 +67,11 @@ public class PsychologicalSupportService {
         try {
             // 创建数据库会话记录
             ConsultationSession dbSession = consultationSessionService.createSession(userId, createDTO);
-            
-            // 保存初始用户消息到数据库
-            consultationMessageService.saveUserMessage(dbSession.getId(), createDTO.getInitialMessage(), null);
+
+            // 【精确修改】：增加判空逻辑。防止前端未传递 initialMessage 时将 null 存入数据库引发 SQLException
+            if (createDTO.getInitialMessage() != null && !createDTO.getInitialMessage().trim().isEmpty()) {
+                consultationMessageService.saveUserMessage(dbSession.getId(), createDTO.getInitialMessage(), null);
+            }
 
             // 创建会话ID（使用数据库会话ID）
             String sessionId = "session_" + dbSession.getId();

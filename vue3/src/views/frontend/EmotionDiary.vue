@@ -1,4 +1,3 @@
-
 <template>
   <div class="healing-diary-page">
     <div class="ambient-light light-1"></div>
@@ -63,8 +62,8 @@
                 v-for="emotion in customEmotionOptions"
                 :key="emotion.name"
                 class="emotion-item"
-                :class="{ &apos;is-active&apos;: diaryForm.dominantEmotion === emotion.name }"
-                :style="diaryForm.dominantEmotion === emotion.name ? { &apos;--emo-color&apos;: emotion.color, &apos;--emo-bg&apos;: emotion.bg } : {}"
+                :class="{ 'is-active': diaryForm.dominantEmotion === emotion.name }"
+                :style="diaryForm.dominantEmotion === emotion.name ? { '--emo-color': emotion.color, '--emo-bg': emotion.bg } : {}"
                 @click="selectEmotion(emotion.name)"
               >
                 <div class="emo-icon" :style="{ color: emotion.color }">
@@ -146,6 +145,9 @@
               </button>
             </div>
           </div>
+
+          <CbtSandplay />
+
         </div>
 
         <div class="statistics-section">
@@ -157,8 +159,8 @@
             <el-calendar v-model="currentDate" class="healing-calendar">
               <template #date-cell="{ data }">
                 <div class="calendar-day">
-                  <span class="day-text" :class="{ &apos;is-today&apos;: data.day === formatLocalDate(new Date()) }">
-                    {{ data.day.split(&apos;-&apos;).slice(2).join(&apos;&apos;) }}
+                  <span class="day-text" :class="{ 'is-today': data.day === formatLocalDate(new Date()) }">
+                    {{ data.day.split('-').slice(2).join('') }}
                   </span>
                   <div 
                     v-if="emotionMap[data.day]" 
@@ -175,7 +177,7 @@
             <div class="card-header">
               <span class="card-title ai-title"><i class="fas fa-sparkles"></i> AI 心境感知</span>
               <button class="icon-refresh-btn" :disabled="aiAnalysisLoading" @click="refreshTodayAnalysisStatus">
-                <i class="fas fa-sync-alt" :class="{&apos;fa-spin&apos;: aiAnalysisLoading}"></i>
+                <i class="fas fa-sync-alt" :class="{'fa-spin': aiAnalysisLoading}"></i>
               </button>
             </div>
             
@@ -307,8 +309,8 @@
                   {{ diary.dominantEmotion || "平静" }} · {{ diary.moodScore }}分
                 </div>
                 <div class="status-tags">
-                  <span v-if="diary.aiAnalysisStatus === &apos;COMPLETED&apos;" class="tag-success">AI已感知</span>
-                  <span v-else-if="diary.aiAnalysisStatus === &apos;PENDING&apos;" class="tag-pending">感知中</span>
+                  <span v-if="diary.aiAnalysisStatus === 'COMPLETED'" class="tag-success">AI已感知</span>
+                  <span v-else-if="diary.aiAnalysisStatus === 'PENDING'" class="tag-pending">感知中</span>
                 </div>
               </div>
               <div class="card-body">
@@ -339,10 +341,10 @@
 
 <script setup>
 /* eslint-disable */
-// 这个免死金牌指令帮你屏蔽了烦人的 Vetur 报错，直接出活！
 import { ref, reactive, onMounted, onUnmounted, nextTick, watch } from "vue"
 import { useRouter } from "vue-router"
 import { ElMessage, ElMessageBox } from "element-plus"
+import CbtSandplay from "@/components/common/CbtSandplay.vue" // 引入认知重塑沙盘
 import {
   createOrUpdateEmotionDiary,
   getTodayEmotionDiary,
@@ -428,21 +430,19 @@ const getEmotionBg = (emotionName) => {
   const e = customEmotionOptions.find(opt => opt.name === emotionName)
   return e ? e.bg : "#F1F5F9"
 }
-// -------------------- 核心功能 1：数据翻译器（确保圆点显示） --------------------
+
 const fetchCalendarData = async (dateObj) => {
   const year = dateObj.getFullYear()
   const month = dateObj.getMonth() + 1
   try {
     const res = await getEmotionCalendar({ year, month })
     if (res.code === 200 && res.data) {
-      // 防止后端传英文枚举导致配不上色，做一个强行翻译字典
       const enumTranslate = {
         "HAPPY": "开心", "CALM": "平静", "ANXIOUS": "焦虑", "SAD": "悲伤",
         "EXCITED": "兴奋", "TIRED": "疲惫", "SURPRISED": "惊讶", "CONFUSED": "困惑"
       }
       const safeData = {}
       for (const [dateKey, emotionStr] of Object.entries(res.data)) {
-        // 如果是英文则翻译，如果是中文则原样保留
         safeData[dateKey] = enumTranslate[emotionStr.toUpperCase()] || emotionStr
       }
       emotionMap.value = safeData
@@ -451,21 +451,18 @@ const fetchCalendarData = async (dateObj) => {
     console.error("日历数据获取失败", error)
   }
 }
-// -------------------- 核心功能 2：点哪天查哪天（时光穿梭） --------------------
+
 const loadDiaryBySelectedDate = async (dateObj) => {
   const selectedDateStr = formatLocalDate(dateObj)
   const todayStr = formatLocalDate(new Date())
   
-  // 1. 先重置表单为选中的日期
   resetForm(dateObj)
   
-  // 2. 如果点的是今天，直接拉取今日专享接口
   if (selectedDateStr === todayStr) {
     loadTodayDiary()
     return
   }
   
-  // 3. 如果点的是历史日期，调用分页接口锁定查询这一天
   try {
     await getEmotionDiaryPage({
       current: 1,
@@ -498,16 +495,13 @@ const loadDiaryBySelectedDate = async (dateObj) => {
     console.error("加载历史日记失败", error)
   }
 }
-// 监听日历选中日期的变化：不但重刷圆点，更要重刷表单内容
+
 watch(currentDate, (newDate, oldDate) => {
-  // 如果月份变了，才重新请求后端拉取一整个月的圆点数据
   if (!oldDate || newDate.getMonth() !== oldDate.getMonth() || newDate.getFullYear() !== oldDate.getFullYear()) {
     fetchCalendarData(newDate)
   }
-  // 【重点】触发日记内容更新
   loadDiaryBySelectedDate(newDate)
 })
-
 
 const saveDiary = async () => {
   if (!diaryForm.moodScore) {
@@ -549,9 +543,8 @@ const saveDiary = async () => {
   }
   saving.value = false
 }
-// 修改 resetForm 使其支持传入目标日期，不传默认是当天
+
 const resetForm = (targetDateArg) => {
-  // 防止在模板中 @click 直接把鼠标 Event 对象传进来了
   const targetDateObj = (targetDateArg instanceof Date) ? targetDateArg : new Date()
   
   Object.assign(diaryForm, {
@@ -566,6 +559,7 @@ const resetForm = (targetDateArg) => {
   currentDiaryId.value = null
   aiAnalysis.value = null
 }
+
 const loadTodayDiary = async () => {
   await getTodayEmotionDiary({
     showDefaultMsg: false,
@@ -589,6 +583,7 @@ const loadTodayDiary = async () => {
     }
   })
 }
+
 const loadStatistics = async () => {
   await getEmotionDiaryStatistics({ days: 7 }, {
     onSuccess: (data) => {
@@ -615,6 +610,7 @@ const loadStatistics = async () => {
     }
   })
 }
+
 const loadHistoryData = async () => {
   const params = { current: historyPage.current, size: historyPage.size }
   if (historyDateRange.value && historyDateRange.value.length === 2) {
@@ -635,6 +631,7 @@ const loadHistoryData = async () => {
     }
   })
 }
+
 const editDiary = (diary) => {
   Object.assign(diaryForm, {
     diaryDate: diary.diaryDate,
@@ -647,10 +644,10 @@ const editDiary = (diary) => {
   })
   currentDiaryId.value = diary.id
   showHistoryDialog.value = false
-  // 同步更新日历高亮选中块
   currentDate.value = new Date(diary.diaryDate)
   ElMessage.success("已回到那天的记忆，请修改")
 }
+
 const deleteDiary = async (diaryId) => {
   try {
     await ElMessageBox.confirm("确定要遗忘这段记忆吗？", "提示", {
@@ -670,6 +667,7 @@ const deleteDiary = async (diaryId) => {
     console.log("取消删除", error)
   }
 }
+
 const handleDuplicateDiary = async (existingDiaryId) => {
   try {
     const action = await ElMessageBox.confirm("今日已有记录，是否补充？", "提示", {
@@ -687,9 +685,11 @@ const handleDuplicateDiary = async (existingDiaryId) => {
     console.log("取消操作", error)
   }
 }
+
 const viewDiaryDetail = (diaryId) => {
   router.push({ name: "EmotionDiaryDetail", params: { id: diaryId } })
 }
+
 const renderTrendChart = (trendData) => {
   nextTick(() => {
     if (!trendChart.value || !trendData.length) return
@@ -729,6 +729,7 @@ const renderTrendChart = (trendData) => {
     }
   })
 }
+
 const loadAiAnalysis = async () => {
   if (!currentDiaryId.value) return
   
@@ -744,6 +745,7 @@ const loadAiAnalysis = async () => {
     }
   })
 }
+
 const refreshTodayAnalysisStatus = async () => {
   if (!currentDiaryId.value) return
   aiAnalysisLoading.value = true
@@ -758,6 +760,7 @@ const refreshTodayAnalysisStatus = async () => {
   } catch (error) { console.error(error) }
   aiAnalysisLoading.value = false
 }
+
 const triggerAnalysis = async () => {
   if (!currentDiaryId.value) {
     ElMessage.warning("请先保存日记")
@@ -767,6 +770,7 @@ const triggerAnalysis = async () => {
     onSuccess: () => { startAiAnalysisPolling() }
   })
 }
+
 let pollingTimer = null
 let pollingAttempts = 0
 const maxPollingAttempts = 20
@@ -777,6 +781,7 @@ const clearPollingTimer = () => {
     pollingTimer = null
   }
 }
+
 const startAiAnalysisPolling = () => {
   if (!currentDiaryId.value) return
   pollingAttempts = 0
@@ -799,14 +804,17 @@ const startAiAnalysisPolling = () => {
     }
   }, 30000)
 }
+
 const getRiskLevelClass = (riskLevel) => {
   const classes = { 0: "text-stable", 1: "text-stable", 2: "text-warning", 3: "text-danger" }
   return classes[riskLevel] || "text-stable"
 }
+
 const getRiskLevelText = (riskLevel) => {
   const texts = { 0: "状态平稳", 1: "轻微波动", 2: "需要关注", 3: "建议寻求支持" }
   return texts[riskLevel] || "未知"
 }
+
 watch(showHistoryDialog, (newValue) => {
   if (newValue) loadHistoryData()
 })
@@ -934,7 +942,8 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   color: var(--text-main);
-}.card-title i { color: var(--primary); font-size: 18px; }
+}
+.card-title i { color: var(--primary); font-size: 18px; }
 .section-desc { font-size: 13px; color: var(--text-sub); margin-bottom: 24px; }
 
 .modern-slider-container {
@@ -994,9 +1003,9 @@ onMounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 16px;
   padding: 16px;
-  font-size: 16px;          /* 字体调大 */
-  font-weight: 600;         /* 字体加粗 */
-  color: #1e293b;           /* 字体颜色加深 */
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
   line-height: 1.6;
   resize: none;
   transition: 0.3s;
@@ -1037,7 +1046,8 @@ onMounted(() => {
 .spotlight-icon {
   width: 56px; height: 56px; border-radius: 16px; background: #EEF2FF; color: var(--primary);
   font-size: 28px; display: flex; justify-content: center; align-items: center;
-}.spotlight-text h4 { font-size: 18px; font-weight: 600; margin: 0 0 4px 0; }
+}
+.spotlight-text h4 { font-size: 18px; font-weight: 600; margin: 0 0 4px 0; }
 .score-text { font-size: 13px; color: var(--text-sub); }
 
 .assessment-row { margin-bottom: 20px; }
@@ -1059,7 +1069,8 @@ onMounted(() => {
 
 .soft-btn {
   margin-top: 12px; padding: 8px 16px; border-radius: 12px; background: white; border: 1px solid #E2E8F0; color: var(--text-main); font-size: 12px; cursor: pointer; transition: 0.2s;
-}.soft-btn:hover { border-color: var(--primary); color: var(--primary); }
+}
+.soft-btn:hover { border-color: var(--primary); color: var(--primary); }
 
 .stat-card { padding: 24px; }
 .stat-title { font-size: 15px; font-weight: 600; margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
@@ -1127,6 +1138,5 @@ onMounted(() => {
 
 @media (max-width: 1024px) {
   .content-layout { grid-template-columns: 1fr; }
-}</style>
-
-```
+}
+</style>
