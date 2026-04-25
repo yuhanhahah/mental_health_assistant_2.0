@@ -86,8 +86,9 @@
           <template #default="{ row }">
             <div class="category-name-cell">
               <i 
-                class="fas fa-folder" 
-                style="color: #409EFF; margin-right: 8px;"
+                :class="getCategoryIcon(row.categoryName)" 
+                :style="{ color: getCategoryIconColor(row.categoryName) }"
+                style="margin-right: 8px;"
               ></i>
               <span class="category-name">{{ row.categoryName }}</span>
             </div>
@@ -155,7 +156,8 @@
         
         <el-table-column 
           label="操作" 
-          width="200" 
+          width="240" 
+          align="center"
           fixed="right"
         >
           <template #default="{ row }">
@@ -163,29 +165,23 @@
               <el-button 
                 size="small" 
                 type="primary" 
-                link
                 @click="handleEdit(row)"
               >
-                <i class="fas fa-edit"></i>
                 编辑
               </el-button>
               <el-button 
                 size="small" 
                 :type="row.status === 1 ? 'warning' : 'success'" 
-                link
                 @click="handleToggleStatus(row)"
               >
-                <i :class="row.status === 1 ? 'fas fa-ban' : 'fas fa-check'"></i>
                 {{ row.status === 1 ? '禁用' : '启用' }}
               </el-button>
               <el-button 
                 size="small" 
                 type="danger" 
-                link
                 @click="handleDelete(row)"
                 :disabled="row.articleCount > 0"
               >
-                <i class="fas fa-trash"></i>
                 删除
               </el-button>
             </div>
@@ -228,6 +224,30 @@ import {
   getCategoryTree 
 } from '@/api/knowledgeCategory'
 import { formatDateTime } from '@/utils/dateUtils'
+
+// 分类图标
+const getCategoryIcon = (name) => ({
+  '情绪管理': 'fas fa-heart',
+  '焦虑抑郁': 'fas fa-brain',
+  '工作压力': 'fas fa-briefcase',
+  '人际关系': 'fas fa-users',
+  '睡眠健康': 'fas fa-bed',
+  '儿童心理': 'fas fa-child',
+  '创伤康复': 'fas fa-heart-broken',
+  '放松技巧': 'fas fa-leaf'
+}[name] || 'fas fa-folder')
+
+// 分类图标颜色 - 低饱和度配色
+const getCategoryIconColor = (name) => ({
+  '情绪管理': '#f472b6',
+  '焦虑抑郁': '#818cf8',
+  '工作压力': '#fb923c',
+  '人际关系': '#60a5fa',
+  '睡眠健康': '#a78bfa',
+  '儿童心理': '#34d399',
+  '创伤康复': '#fb7185',
+  '放松技巧': '#4ade80'
+}[name] || '#409EFF')
 
 // 响应式数据
 const loading = ref(false)
@@ -518,7 +538,7 @@ onMounted(() => {
 }
 
 .search-area :deep(.el-button) {
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: 500;
   padding: 8px 16px;
 }
@@ -587,14 +607,58 @@ onMounted(() => {
 
 .action-buttons {
   display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
 }
 
 .action-buttons :deep(.el-button) {
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 0.875rem;
+  padding: 5px 12px;
   transition: all 0.3s ease;
+  margin: 0 2px;
+}
+
+.action-buttons :deep(.el-button--primary) {
+  background: #667eea;
+  border-color: #667eea;
+}
+
+.action-buttons :deep(.el-button--primary:hover) {
+  background: #5a6fd8;
+  border-color: #5a6fd8;
+}
+
+.action-buttons :deep(.el-button--success) {
+  background: #38a169;
+  border-color: #38a169;
+}
+
+.action-buttons :deep(.el-button--success:hover) {
+  background: #2f855a;
+  border-color: #2f855a;
+}
+
+.action-buttons :deep(.el-button--warning) {
+  background: #f59e0b;
+  border-color: #f59e0b;
+}
+
+.action-buttons :deep(.el-button--warning:hover) {
+  background: #d97706;
+  border-color: #d97706;
+}
+
+.action-buttons :deep(.el-button--danger) {
+  background: #e53e3e;
+  border-color: #e53e3e;
+}
+
+.action-buttons :deep(.el-button--danger:hover) {
+  background: #c53030;
+  border-color: #c53030;
 }
 
 /* 标签样式优化 */

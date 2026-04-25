@@ -22,14 +22,20 @@
       <div class="content-layout">
         <div class="diary-input-section">
           
-          <div class="glass-card section-card">
+          <div class="glass-card section-card" :class="{ 'read-only-mode': isFutureDate }">
             <h3 class="card-title">
               <i class="fas fa-temperature-half"></i> 情绪感知温度
-              <span v-if="diaryForm.diaryDate !== formatLocalDate(new Date())" class="history-badge">
+              <span v-if="isFutureDate" class="future-badge">
+                <i class="fas fa-clock"></i> 未来日期 · 仅供预览
+              </span>
+              <span v-else-if="diaryForm.diaryDate !== formatLocalDate(new Date())" class="history-badge">
                 (补写/查看: {{ diaryForm.diaryDate }})
               </span>
             </h3>
-            <p class="section-desc">您此刻的整体情绪强度如何？(1-10分)</p>
+            <p class="section-desc">
+              <template v-if="isFutureDate">未来的情绪暂不可预测...</template>
+              <template v-else>您此刻的整体情绪强度如何？(1-10分)</template>
+            </p>
             
             <div class="modern-slider-container">
               <span class="slider-label">低落</span>
@@ -41,6 +47,7 @@
                   :step="1"
                   class="healing-slider"
                   show-stops
+                  :disabled="isFutureDate"
                 />
               </div>
               <span class="slider-label">极好</span>
@@ -51,19 +58,25 @@
             </div>
           </div>
 
-          <div class="glass-card section-card">
+          <div class="glass-card section-card" :class="{ 'read-only-mode': isFutureDate }">
             <h3 class="card-title">
               <i class="fas fa-wind"></i> 捕捉主要情绪
+              <span v-if="isFutureDate" class="future-badge">
+                <i class="fas fa-clock"></i> 未来日期 · 仅供预览
+              </span>
             </h3>
-            <p class="section-desc">哪种情绪最能代表您现在的状态？</p>
+            <p class="section-desc">
+              <template v-if="isFutureDate">等待那天的到来...</template>
+              <template v-else>哪种情绪最能代表您现在的状态？</template>
+            </p>
             
             <div class="emotion-grid">
               <div
                 v-for="emotion in customEmotionOptions"
                 :key="emotion.name"
                 class="emotion-item"
-                :class="{ 'is-active': diaryForm.dominantEmotion === emotion.name }"
-                :style="diaryForm.dominantEmotion === emotion.name ? { '--emo-color': emotion.color, '--emo-bg': emotion.bg } : {}"
+                :class="{ 'is-active': diaryForm.dominantEmotion === emotion.name, 'is-disabled': isFutureDate }"
+                :style="diaryForm.dominantEmotion === emotion.name && !isFutureDate ? { '--emo-color': emotion.color, '--emo-bg': emotion.bg } : {}"
                 @click="selectEmotion(emotion.name)"
               >
                 <div class="emo-icon" :style="{ color: emotion.color }">
@@ -74,9 +87,12 @@
             </div>
           </div>
 
-          <div class="glass-card section-card">
+          <div class="glass-card section-card" :class="{ 'read-only-mode': isFutureDate }">
             <h3 class="card-title">
               <i class="fas fa-feather"></i> 倾听内心的声音
+              <span v-if="isFutureDate" class="future-badge">
+                <i class="fas fa-clock"></i> 未来日期 · 仅供预览
+              </span>
             </h3>
             
             <div class="form-item">
@@ -84,9 +100,11 @@
               <textarea
                 v-model="diaryForm.emotionTriggers"
                 class="clean-textarea"
+                :class="{ 'read-only-textarea': isFutureDate }"
                 rows="2"
                 placeholder="是什么样的人、事、物泛起了心中的波澜？"
                 maxlength="1000"
+                :disabled="isFutureDate"
               ></textarea>
             </div>
 
@@ -95,13 +113,15 @@
               <textarea
                 v-model="diaryForm.diaryContent"
                 class="clean-textarea large-textarea"
+                :class="{ 'read-only-textarea': isFutureDate }"
                 rows="4"
                 placeholder="在这里安全地放下你的思绪，不用在意逻辑与修辞..."
                 maxlength="2000"
+                :disabled="isFutureDate"
               ></textarea>
             </div>
 
-            <div class="life-indicators">
+            <div class="life-indicators" :class="{ 'disabled-section': isFutureDate }">
               <div class="indicator-box">
                 <label><i class="fas fa-moon"></i> 睡眠质量</label>
                 <el-select
@@ -109,6 +129,7 @@
                   placeholder="请感受"
                   class="clean-select"
                   popper-class="clean-select-popper"
+                  :disabled="isFutureDate"
                 >
                   <el-option label="很差" :value="1" />
                   <el-option label="较差" :value="2" />
@@ -124,6 +145,7 @@
                   placeholder="请感受"
                   class="clean-select"
                   popper-class="clean-select-popper"
+                  :disabled="isFutureDate"
                 >
                   <el-option label="很低" :value="1" />
                   <el-option label="较低" :value="2" />
@@ -135,14 +157,20 @@
             </div>
 
             <div class="action-bar">
-              <button class="flat-btn ghost-mode" @click="resetForm">
-                清空重写
+              <button v-if="isFutureDate" class="flat-btn hint-mode" disabled>
+                <i class="fas fa-hourglass-half"></i>
+                静待时光，记录未来
               </button>
-              <button class="flat-btn primary-mode" :disabled="saving" @click="saveDiary">
-                <i v-if="!saving" class="fas fa-save"></i>
-                <i v-else class="fas fa-spinner fa-spin"></i>
-                封存该日记忆
-              </button>
+              <template v-else>
+                <button class="flat-btn ghost-mode" @click="resetForm">
+                  清空重写
+                </button>
+                <button class="flat-btn primary-mode" :disabled="saving" @click="saveDiary">
+                  <i v-if="!saving" class="fas fa-save"></i>
+                  <i v-else class="fas fa-spinner fa-spin"></i>
+                  封存该日记忆
+                </button>
+              </template>
             </div>
           </div>
 
@@ -341,7 +369,7 @@
 
 <script setup>
 /* eslint-disable */
-import { ref, reactive, onMounted, onUnmounted, nextTick, watch } from "vue"
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from "vue"
 import { useRouter } from "vue-router"
 import { ElMessage, ElMessageBox } from "element-plus"
 import CbtSandplay from "@/components/common/CbtSandplay.vue" // 引入认知重塑沙盘
@@ -359,6 +387,15 @@ import {
 } from "@/api/emotionDiary"
 
 const router = useRouter()
+
+// 判断是否为未来日期
+const isFutureDate = computed(() => {
+  const selectedDate = new Date(diaryForm.diaryDate)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  selectedDate.setHours(0, 0, 0, 0)
+  return selectedDate > today
+})
 
 const formatLocalDate = (date) => {
   if (!date) return ""
@@ -413,7 +450,13 @@ const customEmotionOptions = [
   { name: "困惑", icon: "fas fa-question", color: "#64748B", bg: "#F8FAFC" }
 ]
 
-const selectEmotion = (emotion) => { diaryForm.dominantEmotion = emotion }
+const selectEmotion = (emotion) => { 
+  if (isFutureDate.value) {
+    ElMessage.info("未来的情绪暂不可预测，请等待那天的到来")
+    return
+  }
+  diaryForm.dominantEmotion = emotion 
+}
 
 const getMoodDescription = (score) => {
   const descriptions = {
@@ -460,6 +503,17 @@ const loadDiaryBySelectedDate = async (dateObj) => {
   
   if (selectedDateStr === todayStr) {
     loadTodayDiary()
+    return
+  }
+
+  // 判断是否为未来日期
+  const selectedDate = new Date(dateObj)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  selectedDate.setHours(0, 0, 0, 0)
+  
+  if (selectedDate > today) {
+    // 未来日期不需要查询，直接显示空表单
     return
   }
   
@@ -931,8 +985,61 @@ onMounted(() => {
   margin-left: 8px;
   font-weight: normal;
 }
+
+.future-badge {
+  font-size: 12px;
+  color: #9CA3AF;
+  background: #F1F5F9;
+  padding: 2px 10px;
+  border-radius: 12px;
+  margin-left: 8px;
+  font-weight: normal;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.future-badge i {
+  font-size: 10px;
+}
+
 .section-card { margin-bottom: 24px; }
 .section-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(31, 38, 135, 0.06); }
+
+/* 未来日期只读模式样式 */
+.section-card.read-only-mode {
+  opacity: 0.75;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.section-card.read-only-mode .card-title,
+.section-card.read-only-mode .card-title i {
+  color: #94A3B8;
+}
+
+.read-only-textarea {
+  background: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+  color: #94A3B8 !important;
+  cursor: not-allowed;
+}
+
+.disabled-section {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.emotion-item.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.hint-mode {
+  background: #F1F5F9 !important;
+  border: 1px solid #E2E8F0 !important;
+  color: #94A3B8 !important;
+  cursor: not-allowed;
+}
 
 .card-title {
   font-size: 16px;
@@ -1102,7 +1209,18 @@ onMounted(() => {
 
 .calendar-day { display: flex; flex-direction: column; align-items: center; height: 100%; }
 .day-text { font-size: 13px; color: var(--text-main); font-weight: 500; }
-.day-text.is-today { color: var(--primary); font-weight: bold; }
+.day-text.is-today { 
+  color: #3B82F6; 
+  font-weight: bold;
+  background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
 .emotion-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 4px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
 
 :deep(.healing-dialog) { border-radius: 24px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); }

@@ -64,10 +64,10 @@
                   v-for="category in categories"
                   :key="category.id"
                   class="category-item"
-                  :class="{ active: selectedCategoryId === category.id }"
+                  :class="[getCategoryColorClass(category.categoryName), { active: selectedCategoryId === category.id }]"
                   @click="selectCategory(category.id)"
                 >
-                  <i :class="category.icon"></i>
+                  <i :class="category.icon" :style="{ color: getCategoryIconColor(category.categoryName) }"></i>
                   <span class="category-name">{{ category.categoryName }}</span>
                   <span class="category-count">{{ category.articleCount || 0 }}</span>
                 </div>
@@ -331,12 +331,51 @@ const getCategoryIcon = (name) => ({
   '情绪管理': 'fas fa-heart',
   '焦虑抑郁': 'fas fa-brain',
   '工作压力': 'fas fa-briefcase',
+  '压力缓解': 'fas fa-spa',
   '人际关系': 'fas fa-users',
   '睡眠健康': 'fas fa-bed',
   '儿童心理': 'fas fa-child',
   '创伤康复': 'fas fa-heart-broken',
-  '放松技巧': 'fas fa-leaf'
+  '放松技巧': 'fas fa-leaf',
+  '心理健康基础': 'fas fa-heartbeat',
+  '情绪调节': 'fas fa-smile',
+  '人际沟通': 'fas fa-comments',
+  '自我成长': 'fas fa-seedling'
 }[name] || 'fas fa-bookmark')
+
+// 分类图标颜色 - 低饱和度配色
+const getCategoryIconColor = (name) => ({
+  '情绪管理': '#f472b6',    // 粉色
+  '焦虑抑郁': '#818cf8',    // 紫蓝色
+  '工作压力': '#fb923c',    // 橙色
+  '压力缓解': '#f97316',    // 深橙色
+  '人际关系': '#60a5fa',    // 蓝色
+  '睡眠健康': '#a78bfa',    // 紫色
+  '儿童心理': '#34d399',    // 绿色
+  '创伤康复': '#fb7185',    // 红色
+  '放松技巧': '#4ade80',    // 浅绿色
+  '心理健康基础': '#3b82f6',  // 科技蓝
+  '情绪调节': '#ec4899',     // 粉红色
+  '人际沟通': '#06b6d4',    // 青色
+  '自我成长': '#22c55e'     // 翠绿色
+}[name] || '#3b82f6')
+
+// 分类背景色类名
+const getCategoryColorClass = (name) => ({
+  '情绪管理': 'color-pink',
+  '焦虑抑郁': 'color-purple',
+  '工作压力': 'color-orange',
+  '压力缓解': 'color-orange',
+  '人际关系': 'color-blue',
+  '睡眠健康': 'color-violet',
+  '儿童心理': 'color-teal',
+  '创伤康复': 'color-rose',
+  '放松技巧': 'color-green',
+  '心理健康基础': 'color-blue',
+  '情绪调节': 'color-pink',
+  '人际沟通': 'color-cyan',
+  '自我成长': 'color-teal'
+}[name] || '')
 
 const formatReadCount = (count) => {
   if (!count) return '0'
@@ -550,17 +589,74 @@ onMounted(() => {
   cursor: pointer; font-size: 0.95rem; color: var(--text-sub); 
   font-weight: 500; transition: all 0.2s ease; 
 }
-.category-item i { font-size: 1rem; width: 1.25rem; text-align: center; }
+.category-item i { font-size: 1rem; width: 1.25rem; text-align: center; transition: color 0.2s ease; }
 .category-item:hover { background: #f3f4f6; color: var(--text-main); }
-.category-item:hover i { color: var(--primary-color); }
+.category-item:hover i { color: inherit; }
+
+/* 不同分类图标的低饱和度背景色 */
+.category-item.color-pink:hover { background: rgba(244, 114, 182, 0.1); color: #db2777; }
+.category-item.color-pink:hover i { color: #f472b6; }
+
+.category-item.color-purple:hover { background: rgba(129, 140, 248, 0.1); color: #6366f1; }
+.category-item.color-purple:hover i { color: #818cf8; }
+
+.category-item.color-orange:hover { background: rgba(251, 146, 60, 0.1); color: #ea580c; }
+.category-item.color-orange:hover i { color: #fb923c; }
+
+.category-item.color-blue:hover { background: rgba(96, 165, 250, 0.1); color: #2563eb; }
+.category-item.color-blue:hover i { color: #60a5fa; }
+
+.category-item.color-violet:hover { background: rgba(167, 139, 250, 0.1); color: #7c3aed; }
+.category-item.color-violet:hover i { color: #a78bfa; }
+
+.category-item.color-teal:hover { background: rgba(52, 211, 153, 0.1); color: #059669; }
+.category-item.color-teal:hover i { color: #34d399; }
+
+.category-item.color-rose:hover { background: rgba(251, 113, 133, 0.1); color: #e11d48; }
+.category-item.color-rose:hover i { color: #fb7185; }
+
+.category-item.color-green:hover { background: rgba(74, 222, 128, 0.1); color: #16a34a; }
+.category-item.color-green:hover i { color: #4ade80; }
+
+.category-item.color-cyan:hover { background: rgba(6, 182, 212, 0.1); color: #0891b2; }
+.category-item.color-cyan:hover i { color: #06b6d4; }
 
 /* 激活状态 */
 .category-item.active { 
-  background: rgba(74, 144, 226, 0.1); 
-  color: var(--primary-color); 
   font-weight: 600; 
 }
-.category-item.active i { color: var(--primary-color); }
+.category-item.color-pink.active { background: rgba(244, 114, 182, 0.15); color: #db2777; }
+.category-item.color-pink.active i { color: #f472b6; }
+
+.category-item.color-purple.active { background: rgba(129, 140, 248, 0.15); color: #6366f1; }
+.category-item.color-purple.active i { color: #818cf8; }
+
+.category-item.color-orange.active { background: rgba(251, 146, 60, 0.15); color: #ea580c; }
+.category-item.color-orange.active i { color: #fb923c; }
+
+.category-item.color-blue.active { background: rgba(96, 165, 250, 0.15); color: #2563eb; }
+.category-item.color-blue.active i { color: #60a5fa; }
+
+.category-item.color-violet.active { background: rgba(167, 139, 250, 0.15); color: #7c3aed; }
+.category-item.color-violet.active i { color: #a78bfa; }
+
+.category-item.color-teal.active { background: rgba(52, 211, 153, 0.15); color: #059669; }
+.category-item.color-teal.active i { color: #34d399; }
+
+.category-item.color-rose.active { background: rgba(251, 113, 133, 0.15); color: #e11d48; }
+.category-item.color-rose.active i { color: #fb7185; }
+
+.category-item.color-green.active { background: rgba(74, 222, 128, 0.15); color: #16a34a; }
+.category-item.color-green.active i { color: #4ade80; }
+
+.category-item.color-cyan.active { background: rgba(6, 182, 212, 0.15); color: #0891b2; }
+.category-item.color-cyan.active i { color: #06b6d4; }
+
+/* 默认分类的激活态 */
+.category-item:not([class*="color-"]).active { 
+  background: rgba(74, 144, 226, 0.1); 
+  color: var(--primary-color); 
+}
 .category-name { flex: 1; }
 .category-count { 
   font-size: 0.75rem; color: #9ca3af; 

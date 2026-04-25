@@ -17,7 +17,7 @@
     <div class="article-content">
       <div class="article-meta">
         <el-tag 
-          :type="getCategoryTagType(article.categoryName)"
+          :style="{ backgroundColor: getCategoryTagBg(article.categoryName), borderColor: getCategoryTagBorder(article.categoryName), color: getCategoryTagColor(article.categoryName) }"
           size="small"
           effect="plain"
         >
@@ -34,25 +34,28 @@
       
       <div class="article-footer">
         <div class="author-info">
-          <i class="fas fa-user-md"></i>
-          <span>{{ article.authorName || '心理健康助手' }}</span>
-          <span class="separator">·</span>
-          <i class="fas fa-calendar"></i>
-          <span>{{ formatDate(article.publishedAt) }}</span>
+          <span class="author-avatar">
+            <i class="fas fa-user-md"></i>
+          </span>
+          <span class="author-name">{{ article.authorName || '心理健康助手' }}</span>
         </div>
         
-        <div class="article-stats">
-          <span class="stat-item">
-            <i class="fas fa-eye"></i>
-            {{ formatReadCount(article.readCount) }}
+        <div class="article-actions">
+          <span class="action-item date-action">
+            <i class="far fa-calendar"></i>
+            <span>{{ formatDate(article.publishedAt) }}</span>
+          </span>
+          <span class="action-item">
+            <i class="far fa-eye"></i>
+            <span>{{ formatReadCount(article.readCount) }}</span>
           </span>
           <span 
-            class="favorite-btn stat-item"
+            class="action-item favorite-action"
             :class="{ favorited: article.isFavorited }"
             @click.stop="toggleFavorite"
           >
             <i :class="article.isFavorited ? 'fas fa-heart' : 'far fa-heart'"></i>
-            {{ article.favoriteCount || 0 }}
+            <span>{{ article.favoriteCount || 0 }}</span>
           </span>
         </div>
       </div>
@@ -127,19 +130,56 @@ const toggleFavorite = async () => {
 }
 
 // 工具方法
-const getCategoryTagType = (categoryName) => {
-  const typeMap = {
-    '情绪管理': 'warning',
-    '焦虑抑郁': 'info',
-    '工作压力': 'danger',
-    '人际关系': 'success',
-    '睡眠健康': 'primary',
-    '儿童心理': '',
-    '创伤康复': 'warning',
-    '放松技巧': 'success'
-  }
-  return typeMap[categoryName] || ''
-}
+// 分类标签背景色
+const getCategoryTagBg = (name) => ({
+  '情绪管理': 'rgba(244, 114, 182, 0.15)',
+  '焦虑抑郁': 'rgba(74, 89, 223, 0.15)',
+  '工作压力': 'rgba(251, 146, 60, 0.15)',
+  '压力缓解': 'rgba(249, 115, 22, 0.15)',
+  '人际关系': 'rgba(96, 165, 250, 0.15)',
+  '睡眠健康': 'rgba(167, 139, 250, 0.15)',
+  '儿童心理': 'rgba(52, 211, 153, 0.15)',
+  '创伤康复': 'rgba(251, 113, 133, 0.15)',
+  '放松技巧': 'rgba(74, 222, 128, 0.15)',
+  '心理健康基础': 'rgba(59, 130, 246, 0.15)',
+  '情绪调节': 'rgba(236, 72, 153, 0.15)',
+  '人际沟通': 'rgba(6, 182, 212, 0.15)',
+  '自我成长': 'rgba(34, 197, 94, 0.15)'
+}[name] || 'rgba(59, 130, 246, 0.15)')
+
+// 分类标签边框色
+const getCategoryTagBorder = (name) => ({
+  '情绪管理': '#f472b6',
+  '焦虑抑郁': '#818cf8',
+  '工作压力': '#fb923c',
+  '压力缓解': '#f97316',
+  '人际关系': '#60a5fa',
+  '睡眠健康': '#a78bfa',
+  '儿童心理': '#34d399',
+  '创伤康复': '#fb7185',
+  '放松技巧': '#4ade80',
+  '心理健康基础': '#3b82f6',
+  '情绪调节': '#ec4899',
+  '人际沟通': '#06b6d4',
+  '自我成长': '#22c55e'
+}[name] || '#3b82f6')
+
+// 分类标签文字色
+const getCategoryTagColor = (name) => ({
+  '情绪管理': '#db2777',
+  '焦虑抑郁': '#6366f1',
+  '工作压力': '#ea580c',
+  '压力缓解': '#c2410c',
+  '人际关系': '#2563eb',
+  '睡眠健康': '#7c3aed',
+  '儿童心理': '#059669',
+  '创伤康复': '#e11d48',
+  '放松技巧': '#16a34a',
+  '心理健康基础': '#2563eb',
+  '情绪调节': '#db2777',
+  '人际沟通': '#0891b2',
+  '自我成长': '#16a34a'
+}[name] || '#2563eb')
 
 const getReadTime = (content) => {
   if (!content) return 5
@@ -174,7 +214,7 @@ const handleImageError = (event) => {
   cursor: pointer;
   transition: all 0.4s ease;
   display: flex;
-  height: 180px;
+  min-height: 180px;
 }
 
 .article-card:hover {
@@ -276,49 +316,85 @@ const handleImageError = (event) => {
 .article-footer {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f0f0f0;
 }
 
 .author-info {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  font-size: 0.75rem;
-  color: #6b7280;
+  gap: 0.5rem;
 }
 
-.separator {
-  margin: 0 0.25rem;
-}
-
-.article-stats {
+.author-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: center;
+  color: white;
+  font-size: 0.75rem;
 }
 
-.stat-item {
+.author-avatar i {
+  margin: 0;
+}
+
+.author-name {
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.article-actions {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  font-size: 0.75rem;
-  color: #6b7280;
-  transition: color 0.3s ease;
+  gap: 0.5rem;
 }
 
-.favorite-btn {
-  cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 4px;
+.action-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  color: #6b7280;
+  background: #f5f5f5;
   transition: all 0.3s ease;
 }
 
-.favorite-btn:hover {
+.action-item i {
+  font-size: 0.7rem;
+}
+
+.date-action i {
+  color: #a78bfa;
+}
+
+.action-item:hover {
+  background: #e8e8e8;
+  color: #374151;
+}
+
+.action-item.favorited {
   color: #ef4444;
   background: rgba(239, 68, 68, 0.1);
 }
 
-.favorite-btn.favorited {
+.favorite-action {
+  cursor: pointer;
+}
+
+.favorite-action:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.favorite-action.favorited i {
   color: #ef4444;
 }
 
@@ -340,12 +416,17 @@ const handleImageError = (event) => {
   
   .article-footer {
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.75rem;
     align-items: flex-start;
   }
   
-  .article-stats {
+  .article-actions {
     align-self: flex-end;
+  }
+  
+  .action-item {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
   }
 }
 </style>

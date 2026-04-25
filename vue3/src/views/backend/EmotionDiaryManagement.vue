@@ -1047,7 +1047,7 @@ onMounted(() => {
 }
 
 .search-area :deep(.el-button) {
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: 500;
   padding: 8px 16px;
 }

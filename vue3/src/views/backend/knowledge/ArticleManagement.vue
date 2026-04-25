@@ -153,7 +153,12 @@
           sortable="custom"
         >
           <template #default="{ row }">
-            <el-tag type="info" size="small">{{ row.categoryName }}</el-tag>
+            <el-tag 
+              :style="{ backgroundColor: getCategoryTagBg(row.categoryName), borderColor: getCategoryTagBorder(row.categoryName), color: getCategoryTagColor(row.categoryName) }"
+              size="small"
+            >
+              {{ row.categoryName }}
+            </el-tag>
           </template>
         </el-table-column>
         
@@ -201,7 +206,8 @@
         
         <el-table-column 
           label="操作" 
-          width="200" 
+          width="280" 
+          align="center"
           fixed="right"
         >
           <template #default="{ row }">
@@ -210,7 +216,6 @@
                 type="primary"
                 size="small"
                 @click="handleEdit(row)"
-                link
               >
                 编辑
               </el-button>
@@ -220,7 +225,6 @@
                 type="success"
                 size="small"
                 @click="handlePublish(row)"
-                link
               >
                 {{ row.status === 0 ? '发布' : '重新发布' }}
               </el-button>
@@ -230,16 +234,14 @@
                 type="warning"
                 size="small"
                 @click="handleOffline(row)"
-                link
               >
                 下线
               </el-button>
               
               <el-button
-                type="info"
+                class="preview-btn"
                 size="small"
                 @click="handlePreview(row)"
-                link
               >
                 预览
               </el-button>
@@ -248,7 +250,6 @@
                 type="danger"
                 size="small"
                 @click="handleDelete(row)"
-                link
               >
                 删除
               </el-button>
@@ -587,6 +588,42 @@ const handleEditSuccess = () => {
 }
 
 // 工具方法
+// 分类标签背景色
+const getCategoryTagBg = (name) => ({
+  '情绪管理': 'rgba(244, 114, 182, 0.15)',
+  '焦虑抑郁': 'rgba(129, 140, 248, 0.15)',
+  '工作压力': 'rgba(251, 146, 60, 0.15)',
+  '人际关系': 'rgba(96, 165, 250, 0.15)',
+  '睡眠健康': 'rgba(167, 139, 250, 0.15)',
+  '儿童心理': 'rgba(52, 211, 153, 0.15)',
+  '创伤康复': 'rgba(251, 113, 133, 0.15)',
+  '放松技巧': 'rgba(74, 222, 128, 0.15)'
+}[name] || 'rgba(156, 163, 175, 0.15)')
+
+// 分类标签边框色
+const getCategoryTagBorder = (name) => ({
+  '情绪管理': '#f472b6',
+  '焦虑抑郁': '#818cf8',
+  '工作压力': '#fb923c',
+  '人际关系': '#60a5fa',
+  '睡眠健康': '#a78bfa',
+  '儿童心理': '#34d399',
+  '创伤康复': '#fb7185',
+  '放松技巧': '#4ade80'
+}[name] || '#9ca3af')
+
+// 分类标签文字色
+const getCategoryTagColor = (name) => ({
+  '情绪管理': '#db2777',
+  '焦虑抑郁': '#6366f1',
+  '工作压力': '#ea580c',
+  '人际关系': '#2563eb',
+  '睡眠健康': '#7c3aed',
+  '儿童心理': '#059669',
+  '创伤康复': '#e11d48',
+  '放松技巧': '#16a34a'
+}[name] || '#6b7280')
+
 const getStatusText = (status) => {
   const statusMap = {
     0: '草稿',
@@ -747,7 +784,7 @@ onMounted(() => {
 }
 
 .search-area :deep(.el-button) {
-  border-radius: 8px;
+  border-radius: 12px;
   font-weight: 500;
   padding: 8px 16px;
 }
@@ -836,14 +873,81 @@ onMounted(() => {
 
 .action-buttons {
   display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
 }
 
 .action-buttons :deep(.el-button) {
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 0.875rem;
+  padding: 5px 12px;
   transition: all 0.3s ease;
+  margin: 0 2px;
+}
+
+.action-buttons :deep(.el-button--primary) {
+  background: #667eea;
+  border-color: #667eea;
+}
+
+.action-buttons :deep(.el-button--primary:hover) {
+  background: #5a6fd8;
+  border-color: #5a6fd8;
+}
+
+.action-buttons :deep(.el-button--success) {
+  background: #38a169;
+  border-color: #38a169;
+}
+
+.action-buttons :deep(.el-button--success:hover) {
+  background: #2f855a;
+  border-color: #2f855a;
+}
+
+.action-buttons :deep(.el-button--warning) {
+  background: #f59e0b;
+  border-color: #f59e0b;
+}
+
+.action-buttons :deep(.el-button--warning:hover) {
+  background: #d97706;
+  border-color: #d97706;
+}
+
+.action-buttons :deep(.el-button--danger) {
+  background: #e53e3e;
+  border-color: #e53e3e;
+}
+
+.action-buttons :deep(.el-button--danger:hover) {
+  background: #c53030;
+  border-color: #c53030;
+}
+
+.action-buttons :deep(.el-button--info) {
+  background: #718096;
+  border-color: #718096;
+}
+
+.action-buttons :deep(.el-button--info:hover) {
+  background: #4a5568;
+  border-color: #4a5568;
+}
+
+/* 预览按钮 - 淡绿色 */
+.action-buttons :deep(.preview-btn) {
+  background: #dcfce7;
+  border-color: #86efac;
+  color: #166534;
+}
+
+.action-buttons :deep(.preview-btn:hover) {
+  background: #bbf7d0;
+  border-color: #4ade80;
+  color: #14532d;
 }
 
 
